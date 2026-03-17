@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FlightResult, SearchResponse, Cabin } from '@/lib/types';
 import { fmtVND, toYmd, hhmm, durationText } from '@/lib/utils';
-import { AIRPORTS, resolveAirportCode } from '@/lib/airports';
 import { getAirlineMeta } from '@/lib/airlines';
 
 const LOADING_HINTS = [
@@ -13,6 +12,22 @@ const LOADING_HINTS = [
   'Sắp xong rồi, vui lòng chờ',
 ];
 const SEARCH_STATE_KEY = 'apg_search_page_state';
+const QUICK_ROUTE_LABELS: Record<string, string> = {
+  HAN: 'Hà Nội (HAN) — Nội Bài',
+  SGN: 'TP.HCM (SGN) — Tân Sơn Nhất',
+  DAD: 'Đà Nẵng (DAD) — Đà Nẵng',
+  PQC: 'Phú Quốc (PQC) — Phú Quốc',
+};
+
+type AirportLite = { code: string; city: string; name: string; label: string; tags: string[] };
+type AirportsModule = { AIRPORTS: AirportLite[]; resolveAirportCode: (input: string) => string };
+let airportsModulePromise: Promise<AirportsModule> | null = null;
+async function loadAirportsModule(): Promise<AirportsModule> {
+  if (!airportsModulePromise) {
+    airportsModulePromise = import('@/lib/airports') as Promise<AirportsModule>;
+  }
+  return airportsModulePromise;
+}
 
 function removeAccents(s: string) {
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -26,12 +41,30 @@ function AirportInput({ label, value, onChange, onSelect, placeholder }: {
   placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [airports, setAirports] = useState<AirportLite[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [loadingAirports, setLoadingAirports] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const ensureAirportsLoaded = async () => {
+    if (loaded || loadingAirports) return;
+    setLoadingAirports(true);
+    try {
+      const mod = await loadAirportsModule();
+      setAirports(mod.AIRPORTS);
+      setLoaded(true);
+    } finally {
+      setLoadingAirports(false);
+    }
+  };
+
   const filtered = useMemo(() => {
+    if (!loaded) return [];
     const q = removeAccents(value.trim());
-    if (!q) return AIRPORTS.slice(0, 8);
-    return AIRPORTS.filter(a => a.tags.some(t => removeAccents(t).includes(q)) || removeAccents(a.label).includes(q)).slice(0, 8);
-  }, [value]);
+    if (!q) return airports.slice(0, 8);
+    return airports.filter(a => a.tags.some(t => removeAccents(t).includes(q)) || removeAccents(a.label).includes(q)).slice(0, 8);
+  }, [airports, loaded, value]);
+
   useEffect(() => {
     const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
     document.addEventListener('mousedown', fn);
@@ -44,12 +77,13 @@ function AirportInput({ label, value, onChange, onSelect, placeholder }: {
         className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c8a96b]/40"
         style={{ border: '1px solid #e8dcc8' }}
         value={value} placeholder={placeholder}
-        onChange={e => { onChange(e.target.value); setOpen(true); }}
-        onFocus={e => { e.target.select(); setOpen(true); }}
+        onChange={async e => { onChange(e.target.value); await ensureAirportsLoaded(); setOpen(true); }}
+        onFocus={async e => { e.target.select(); await ensureAirportsLoaded(); setOpen(true); }}
       />
-      {open && filtered.length > 0 && (
+      {open && (loadingAirports || filtered.length > 0) && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-[#e8dcc8] bg-white shadow-xl">
-          {filtered.map(a => (
+          {loadingAirports && <div className="px-3 py-2 text-xs text-slate-500">Đang tải danh sách sân bay…</div>}
+          {!loadingAirports && filtered.map(a => (
             <button key={a.code} className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-[#faf7f2]"
               onMouseDown={e => { e.preventDefault(); onSelect(a.code, a.label); setOpen(false); }}>
               <span className="text-sm text-[#c8a96b]">✈</span>
@@ -313,7 +347,8 @@ export default function HomePage() {
   }
 
   async function search() {
-    const fc=resolveAirportCode(fromInput)||from, tc=resolveAirportCode(toInput)||to;
+    const airportsMod = await loadAirportsModule();
+    const fc=airportsMod.resolveAirportCode(fromInput)||from, tc=airportsMod.resolveAirportCode(toInput)||to;
     setFrom(fc);setTo(tc);setLoading(true);setError('');setResults([]);setMeta(null);
     setOutboundResults([]);setInboundResults([]);setSelectedOutbound(null);setSelectedInbound(null);
     setFilterOneway(emptyFilter);setFilterOutbound(emptyFilter);setFilterInbound(emptyFilter);
@@ -431,7 +466,7 @@ export default function HomePage() {
           {/* Quick routes */}
           <div className="mt-2 flex flex-wrap gap-1">
             {[['HAN','SGN'],['HAN','DAD'],['SGN','HAN'],['HAN','PQC'],['SGN','DAD']].map(([f,t])=>(
-              <button key={`${f}-${t}`} onClick={()=>{const fa=AIRPORTS.find(a=>a.code===f),ta=AIRPORTS.find(a=>a.code===t);if(fa){setFromInput(fa.label);setFrom(f);}if(ta){setToInput(ta.label);setTo(t);}}}
+              <button key={`${f}-${t}`} onClick={()=>{setFromInput(QUICK_ROUTE_LABELS[f] || f);setFrom(f);setToInput(QUICK_ROUTE_LABELS[t] || t);setTo(t);}}
                 className="rounded px-2 py-0.5 text-[10px] text-[#7a6a52] hover:bg-[#faf7f2]" style={{border:'1px solid #e8dcc8',backgroundColor:'white'}}>
                 {f}—{t}
               </button>
