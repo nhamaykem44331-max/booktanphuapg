@@ -18,7 +18,7 @@ function parseHmToMinutes(hm?:string){if(!hm||!/^\d{1,2}:\d{2}$/.test(hm))return
 function formatMinutesShort(mins:number){const h=Math.floor(mins/60);const m=mins%60;return `${h}h${m?` ${String(m).padStart(2,'0')}m`:''}`;}
 function airportLabel(iata:string){const meta=AIRPORT_NAME_MAP[iata]||{city:iata,airportName:iata};return `${meta.city} (${iata})`;}
 
-type ParsedSegment={from:string;to:string;flightNumber:string;departHm:string;arriveHm:string;durationMinutes:number;};
+type ParsedSegment={from:string;to:string;flightNumber:string;departHm:string;arriveHm:string;departDate:string;arriveDate:string;durationMinutes:number;};
 function parseJourneySegments(detailUrl?:string|null):ParsedSegment[]{
   if(!detailUrl)return[];
   try{
@@ -30,21 +30,35 @@ function parseJourneySegments(detailUrl?:string|null):ParsedSegment[]{
       if(p.length<16)return null;
       const durRaw=(p[15]||'').replace(/^dur/i,'');
       const dur=/^\d{4}$/.test(durRaw)?(Number(durRaw.slice(0,2))*60+Number(durRaw.slice(2))):0;
-      return {from:p[0],to:p[1],flightNumber:p[3],departHm:p[4],arriveHm:p[5],durationMinutes:dur};
+      return {from:p[0],to:p[1],flightNumber:p[3],departHm:p[4],arriveHm:p[5],departDate:p[10],arriveDate:p[12],durationMinutes:dur};
     }).filter(Boolean) as ParsedSegment[];
   }catch{return[];}
+}
+function dateFromAbayText(s?:string){
+  if(!s||!/^\d{1,2}[A-Za-z]{3}\d{4}$/.test(s))return null;
+  const months:Record<string,number>={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const day=Number(s.slice(0,s.length-7)); const mon=s.slice(s.length-7,s.length-4); const year=Number(s.slice(-4));
+  if(!(mon in months))return null;
+  return new Date(year,months[mon],day,12,0,0,0);
+}
+function longDateFromAbayText(s?:string){
+  const d=dateFromAbayText(s); if(!d)return '';
+  const days=['CN','T2','T3','T4','T5','T6','T7'];
+  return `${days[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 function buildLayovers(detailUrl?:string|null){
   const segments=parseJourneySegments(detailUrl);
   if(segments.length<2)return[];
-  const out=[] as {airport:string;durationText:string}[];
+  const out=[] as {airport:string;durationText:string;fromSegment:ParsedSegment;toSegment:ParsedSegment}[];
   for(let i=0;i<segments.length-1;i++){
     const cur=segments[i], next=segments[i+1];
     const arr=parseHmToMinutes(cur.arriveHm), dep=parseHmToMinutes(next.departHm);
     if(arr==null||dep==null)continue;
     let diff=dep-arr;
-    if(diff<0) diff+=24*60;
-    out.push({airport:next.from,durationText:formatMinutesShort(diff)});
+    const curDate=dateFromAbayText(cur.arriveDate); const nextDate=dateFromAbayText(next.departDate);
+    if(curDate&&nextDate){ diff += Math.round((nextDate.getTime()-curDate.getTime())/60000); }
+    else if(diff<0){ diff += 24*60; }
+    out.push({airport:next.from,durationText:formatMinutesShort(diff),fromSegment:cur,toSegment:next});
   }
   return out;
 }
@@ -83,18 +97,34 @@ function FlightSegment({label,flight,date,color}:{label:string;flight:FlightResu
         </div>
       </div>
       {layovers.length>0&&(
-        <div className="border-t border-[#f0ebe0] bg-[#fcfaf6] px-3 py-2">
-          <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-[#7a6a52]">Chi tiết nối chuyến</div>
-          <div className="space-y-1.5">
+        <div className="border-t border-[#f0ebe0] bg-[#fcfaf6] px-3 py-2.5">
+          <div className="space-y-2">
             {layovers.map((stop,idx)=>(
-              <div key={`${stop.airport}-${idx}`} className="flex items-start justify-between gap-3 rounded-lg border border-[#eee2cf] bg-white px-2.5 py-2 text-[12px]">
-                <div>
-                  <div className="font-semibold text-[#1a1a1a]">Dừng tại: {airportLabel(stop.airport)}</div>
-                  <div className="text-[11px] text-slate-500">Điểm dừng {idx+1}</div>
+              <div key={`${stop.airport}-${idx}`} className="rounded-lg border border-[#eee2cf] bg-white px-3 py-2.5">
+                <div className="flex items-start justify-between gap-3 text-[12px]">
+                  <div className="font-semibold text-[#1a1a1a]">{airportLabel(stop.fromSegment.from)} ➜ {airportLabel(stop.fromSegment.to)}</div>
+                  <div className="text-right text-[11px] text-slate-500">{longDateFromAbayText(stop.fromSegment.departDate)}</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-[#b45309]">{stop.durationText}</div>
-                  <div className="text-[11px] text-slate-500">Nối chuyến</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <AirlineLogo code={flight.airlineCode} airline={flight.airline} size={22}/>
+                  <div className="min-w-0 flex-1 text-[12px] text-slate-700">{stop.fromSegment.flightNumber}</div>
+                  <div className="text-[12px] text-slate-600">{formatMinutesShort(stop.fromSegment.durationMinutes)}</div>
+                  <div className="text-[13px] font-bold text-[#1a1a1a]">{stop.fromSegment.departHm} - {stop.fromSegment.arriveHm}</div>
+                </div>
+                <div className="my-2 flex items-center gap-2 pl-2">
+                  <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-[#f97316] bg-white"><div className="h-1.5 w-1.5 rounded-full bg-[#f97316]" /></div>
+                  <div className="h-8 w-px bg-[#f1d9b5]" />
+                  <div className="text-[13px] font-semibold text-[#ea580c]">Nối chuyến: {stop.durationText}</div>
+                </div>
+                <div className="flex items-start justify-between gap-3 text-[12px]">
+                  <div className="font-semibold text-[#1a1a1a]">{airportLabel(stop.toSegment.from)} ➜ {airportLabel(stop.toSegment.to)}</div>
+                  <div className="text-right text-[11px] text-slate-500">{longDateFromAbayText(stop.toSegment.departDate)}</div>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <AirlineLogo code={flight.airlineCode} airline={flight.airline} size={22}/>
+                  <div className="min-w-0 flex-1 text-[12px] text-slate-700">{stop.toSegment.flightNumber}</div>
+                  <div className="text-[12px] text-slate-600">{formatMinutesShort(stop.toSegment.durationMinutes)}</div>
+                  <div className="text-[13px] font-bold text-[#1a1a1a]">{stop.toSegment.departHm} - {stop.toSegment.arriveHm}</div>
                 </div>
               </div>
             ))}
@@ -242,16 +272,32 @@ function TicketModal({data,onClose}:{data:QuotePayload;onClose:()=>void}){
                     </div>
                     {layovers.length>0&&(
                       <div style={{borderTop:'1px solid #f0ebe0',background:'#fcfaf6',padding:'10px 14px'}}>
-                        <div style={{marginBottom:'6px',fontSize:'11px',fontWeight:700,letterSpacing:'0.05em',textTransform:'uppercase',color:'#7a6a52'}}>Chi tiết nối chuyến</div>
                         {layovers.map((stop,idx)=>(
-                          <div key={`${stop.airport}-${idx}`} style={{display:'flex',justifyContent:'space-between',gap:'12px',background:'white',border:'1px solid #eee2cf',borderRadius:'8px',padding:'8px 10px',marginBottom:idx<layovers.length-1?'6px':'0'}}>
-                            <div>
-                              <div style={{fontSize:'13px',fontWeight:700,color:'#1a1a1a'}}>Dừng tại: {airportLabel(stop.airport)}</div>
-                              <div style={{fontSize:'11px',color:'#777'}}>Điểm dừng {idx+1}</div>
+                          <div key={`${stop.airport}-${idx}`} style={{background:'white',border:'1px solid #eee2cf',borderRadius:'8px',padding:'10px 12px',marginBottom:idx<layovers.length-1?'8px':'0'}}>
+                            <div style={{display:'flex',justifyContent:'space-between',gap:'12px',fontSize:'13px'}}>
+                              <div style={{fontWeight:700,color:'#1a1a1a'}}>{airportLabel(stop.fromSegment.from)} ➜ {airportLabel(stop.fromSegment.to)}</div>
+                              <div style={{fontSize:'11px',color:'#777'}}>{longDateFromAbayText(stop.fromSegment.departDate)}</div>
                             </div>
-                            <div style={{textAlign:'right'}}>
-                              <div style={{fontSize:'13px',fontWeight:700,color:'#b45309'}}>{stop.durationText}</div>
-                              <div style={{fontSize:'11px',color:'#777'}}>Nối chuyến</div>
+                            <div style={{display:'flex',alignItems:'center',gap:'8px',marginTop:'8px'}}>
+                              {meta.logo&&<img src={meta.logo} alt={flight.airline} style={{width:'22px',height:'22px',borderRadius:'5px',objectFit:'contain',border:'1px solid #eee',background:'white',padding:'2px'}}/>}
+                              <div style={{flex:1,fontSize:'12px',color:'#555'}}>{stop.fromSegment.flightNumber}</div>
+                              <div style={{fontSize:'12px',color:'#666'}}>{formatMinutesShort(stop.fromSegment.durationMinutes)}</div>
+                              <div style={{fontSize:'13px',fontWeight:800,color:'#1a1a1a'}}>{stop.fromSegment.departHm} - {stop.fromSegment.arriveHm}</div>
+                            </div>
+                            <div style={{display:'flex',alignItems:'center',gap:'8px',margin:'10px 0 8px 2px'}}>
+                              <div style={{width:'14px',height:'14px',borderRadius:'999px',border:'2px solid #f97316',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff'}}><div style={{width:'6px',height:'6px',borderRadius:'999px',background:'#f97316'}}/></div>
+                              <div style={{width:'1px',height:'28px',background:'#f1d9b5'}}/>
+                              <div style={{fontSize:'13px',fontWeight:700,color:'#ea580c'}}>Nối chuyến: {stop.durationText}</div>
+                            </div>
+                            <div style={{display:'flex',justifyContent:'space-between',gap:'12px',fontSize:'13px'}}>
+                              <div style={{fontWeight:700,color:'#1a1a1a'}}>{airportLabel(stop.toSegment.from)} ➜ {airportLabel(stop.toSegment.to)}</div>
+                              <div style={{fontSize:'11px',color:'#777'}}>{longDateFromAbayText(stop.toSegment.departDate)}</div>
+                            </div>
+                            <div style={{display:'flex',alignItems:'center',gap:'8px',marginTop:'8px'}}>
+                              {meta.logo&&<img src={meta.logo} alt={flight.airline} style={{width:'22px',height:'22px',borderRadius:'5px',objectFit:'contain',border:'1px solid #eee',background:'white',padding:'2px'}}/>}
+                              <div style={{flex:1,fontSize:'12px',color:'#555'}}>{stop.toSegment.flightNumber}</div>
+                              <div style={{fontSize:'12px',color:'#666'}}>{formatMinutesShort(stop.toSegment.durationMinutes)}</div>
+                              <div style={{fontSize:'13px',fontWeight:800,color:'#1a1a1a'}}>{stop.toSegment.departHm} - {stop.toSegment.arriveHm}</div>
                             </div>
                           </div>
                         ))}
