@@ -269,17 +269,16 @@ export default function HomePage() {
     return ()=>{ clearInterval(dot); clearInterval(hint); };
   }, [loading]);
 
-  function sortFlights(arr:FlightResult[], selId?:string|null) {
+  function sortFlights(arr:FlightResult[]) {
     const copy=[...arr];
     if (sortMode==='time') copy.sort((a,b)=>+new Date(a.departure.time)-+new Date(b.departure.time));
     else copy.sort((a,b)=>a.price.amount-b.price.amount);
-    if (selId) { const i=copy.findIndex(f=>f.id===selId); if(i>0){const[s]=copy.splice(i,1);copy.unshift(s);} }
     return copy;
   }
 
   const sortedOneway   = useMemo(()=>applyFilter(sortFlights(results),filterOneway),[results,sortMode,filterOneway]);
-  const sortedOutbound = useMemo(()=>applyFilter(sortFlights(outboundResults,selectedOutbound?.id),filterOutbound),[outboundResults,sortMode,selectedOutbound?.id,filterOutbound]);
-  const sortedInbound  = useMemo(()=>applyFilter(sortFlights(inboundResults,selectedInbound?.id),filterInbound),[inboundResults,sortMode,selectedInbound?.id,filterInbound]);
+  const sortedOutbound = useMemo(()=>applyFilter(sortFlights(outboundResults),filterOutbound),[outboundResults,sortMode,filterOutbound]);
+  const sortedInbound  = useMemo(()=>applyFilter(sortFlights(inboundResults),filterInbound),[inboundResults,sortMode,filterInbound]);
   const totalRoundtrip = useMemo(()=>(selectedOutbound?.fareBreakdown?.totalAmount??selectedOutbound?.price.amount??0)+(selectedInbound?.fareBreakdown?.totalAmount??selectedInbound?.price.amount??0),[selectedOutbound,selectedInbound]);
 
   function goQuote(outbound:FlightResult, inbound?:FlightResult) {
