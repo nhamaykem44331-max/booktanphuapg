@@ -439,16 +439,16 @@ export default function HomePage() {
           </div>
 
           {/* Passengers + Cabin + Search */}
-          <div className="grid grid-cols-[1fr_1.5fr_1fr_auto] gap-1.5">
+          <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1.5">
             <div>
               <label className="mb-0.5 block text-[10px] font-semibold text-[#7a6a52]">NL</label>
               <input className="w-full rounded-lg px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #e8dcc8'}} type="number" min={1} max={9} value={adults} onChange={e=>setAdults(Math.max(1,Math.min(9,Number(e.target.value||1))))}/>
             </div>
             <div>
               <label className="mb-0.5 block text-[10px] font-semibold text-[#7a6a52]">TE + EB</label>
-              <div className="grid grid-cols-2 gap-1 rounded-lg p-1" style={{border:'1px solid #e8dcc8',backgroundColor:'#fcfaf6'}}>
-                <input className="w-full rounded-md px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #efe4d2',backgroundColor:'white'}} type="number" min={0} max={9} value={children} onChange={e=>setChildren(Math.max(0,Math.min(9,Number(e.target.value||0))))} placeholder="TE"/>
-                <input className="w-full rounded-md px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #efe4d2',backgroundColor:'white'}} type="number" min={0} max={4} value={infants} onChange={e=>setInfants(Math.max(0,Math.min(4,Number(e.target.value||0))))} placeholder="EB"/>
+              <div className="grid h-[38px] grid-cols-2 gap-1 rounded-lg p-1" style={{border:'1px solid #e8dcc8',backgroundColor:'#fcfaf6'}}>
+                <input className="h-full w-full rounded-md px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #efe4d2',backgroundColor:'white'}} type="number" min={0} max={9} value={children} onChange={e=>setChildren(Math.max(0,Math.min(9,Number(e.target.value||0))))} placeholder="TE"/>
+                <input className="h-full w-full rounded-md px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #efe4d2',backgroundColor:'white'}} type="number" min={0} max={4} value={infants} onChange={e=>setInfants(Math.max(0,Math.min(4,Number(e.target.value||0))))} placeholder="EB"/>
               </div>
             </div>
             <div>

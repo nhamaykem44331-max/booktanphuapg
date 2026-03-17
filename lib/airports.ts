@@ -2,24 +2,29 @@ export type Airport = { code: string; city: string; name: string; tags: string[]
 
 export const AIRPORTS: Airport[] = [
   {
+    "code": "AUH",
+    "city": "Abu Dhabi",
+    "name": "Abu Dhabi International Airport"
+  },
+  {
     "code": "BKK",
-    "city": "Bangkok",
-    "name": "Suvarnabhumi"
+    "city": "Suvarnabhumi",
+    "name": "Suvarnabhumi Airport"
   },
   {
     "code": "BMV",
-    "city": "Bu?n Ma Thu?t",
-    "name": "Bu?n Ma Thu?t"
+    "city": "Buôn Ma Thuột",
+    "name": "Buôn Ma Thuột"
   },
   {
     "code": "CAN",
-    "city": "Qu?ng Ch?u",
+    "city": "Quảng Châu",
     "name": "Baiyun"
   },
   {
     "code": "CDG",
-    "city": "Paris",
-    "name": "Charles de Gaulle"
+    "city": "Paris Charles de Gaulle",
+    "name": "Paris Charles de Gaulle Airport"
   },
   {
     "code": "CXR",
@@ -28,18 +33,18 @@ export const AIRPORTS: Airport[] = [
   },
   {
     "code": "DAD",
-    "city": "?? N?ng",
-    "name": "?? N?ng"
+    "city": "Đà Nẵng",
+    "name": "Đà Nẵng"
   },
   {
     "code": "DIN",
-    "city": "?i?n Bi?n",
-    "name": "?i?n Bi?n"
+    "city": "Điện Biên",
+    "name": "Điện Biên"
   },
   {
     "code": "DLI",
-    "city": "?? L?t",
-    "name": "Li?n Kh??ng"
+    "city": "Đà Lạt",
+    "name": "Liên Khương"
   },
   {
     "code": "DOH",
@@ -53,28 +58,28 @@ export const AIRPORTS: Airport[] = [
   },
   {
     "code": "HAN",
-    "city": "H? N?i",
-    "name": "N?i B?i"
+    "city": "Hà Nội",
+    "name": "Nội Bài"
   },
   {
     "code": "HKG",
-    "city": "Hong Kong",
-    "name": "Hong Kong Intl"
+    "city": "Hong Kong (Chek Lap Kok )",
+    "name": "Hong Kong International Airport (Chek Lap Kok Airport)"
   },
   {
     "code": "HPH",
-    "city": "H?i Ph?ng",
-    "name": "C?t Bi"
+    "city": "Hải Phòng",
+    "name": "Cát Bi"
   },
   {
     "code": "HUI",
-    "city": "Hu?",
-    "name": "Ph? B?i"
+    "city": "Huế",
+    "name": "Phú Bài"
   },
   {
     "code": "ICN",
-    "city": "Seoul",
-    "name": "Incheon"
+    "city": "Incheon",
+    "name": "Incheon International Airport"
   },
   {
     "code": "IST",
@@ -83,18 +88,18 @@ export const AIRPORTS: Airport[] = [
   },
   {
     "code": "KIX",
-    "city": "Osaka",
-    "name": "Kansai"
+    "city": "Kansai",
+    "name": "Kansai International Airport"
   },
   {
     "code": "KUL",
     "city": "Kuala Lumpur",
-    "name": "Kuala Lumpur Intl"
+    "name": "Kuala Lumpur International Airport"
   },
   {
     "code": "LAX",
     "city": "Los Angeles",
-    "name": "LAX"
+    "name": "Los Angeles International Airport"
   },
   {
     "code": "LGW",
@@ -109,31 +114,31 @@ export const AIRPORTS: Airport[] = [
   {
     "code": "MEL",
     "city": "Melbourne",
-    "name": "Tullamarine"
+    "name": "Melbourne Airport"
   },
   {
     "code": "MLE",
-    "city": "Mal?",
+    "city": "Malé",
     "name": "Velana International Airport"
   },
   {
     "code": "NRT",
-    "city": "Tokyo",
-    "name": "Narita"
+    "city": "Narita",
+    "name": "Narita International Airport"
   },
   {
     "code": "PEK",
-    "city": "B?c Kinh",
+    "city": "Bắc Kinh",
     "name": "Capital"
   },
   {
     "code": "PQC",
-    "city": "Ph? Qu?c",
-    "name": "Ph? Qu?c"
+    "city": "Phú Quốc",
+    "name": "Phú Quốc"
   },
   {
     "code": "PVG",
-    "city": "Th??ng H?i",
+    "city": "Thượng Hải",
     "name": "Pudong"
   },
   {
@@ -144,47 +149,47 @@ export const AIRPORTS: Airport[] = [
   {
     "code": "SGN",
     "city": "TP.HCM",
-    "name": "T?n S?n Nh?t"
+    "name": "Tân Sơn Nhất"
   },
   {
     "code": "SIN",
-    "city": "Singapore",
-    "name": "Changi"
+    "city": "Singapore Changi",
+    "name": "Singapore Changi Airport"
   },
   {
     "code": "SYD",
-    "city": "Sydney",
-    "name": "Kingsford Smith"
+    "city": "Sydney (Kingsford Smith )",
+    "name": "Sydney Airport (Kingsford Smith Airport)"
   },
   {
     "code": "SZX",
-    "city": "Shenzhen",
-    "name": "Bao'an"
+    "city": "Shenzhen Bao'an",
+    "name": "Shenzhen Bao'an International Airport"
   },
   {
     "code": "TBB",
-    "city": "Tuy H?a",
-    "name": "Tuy H?a"
+    "city": "Tuy Hòa",
+    "name": "Tuy Hòa"
   },
   {
     "code": "THD",
-    "city": "Thanh H?a",
-    "name": "Th? Xu?n"
+    "city": "Thanh Hóa",
+    "name": "Thọ Xuân"
   },
   {
     "code": "TPE",
-    "city": "Taipei",
-    "name": "Taoyuan"
+    "city": "Taiwan Taoyuan",
+    "name": "Taiwan Taoyuan International Airport"
   },
   {
     "code": "UIH",
-    "city": "Quy Nh?n",
-    "name": "Ph? C?t"
+    "city": "Quy Nhơn",
+    "name": "Phù Cát"
   },
   {
     "code": "VCA",
-    "city": "C?n Th?",
-    "name": "C?n Th?"
+    "city": "Cần Thơ",
+    "name": "Cần Thơ"
   },
   {
     "code": "VCL",
@@ -193,13 +198,13 @@ export const AIRPORTS: Airport[] = [
   },
   {
     "code": "VCS",
-    "city": "C?n ??o",
-    "name": "C?n ??o"
+    "city": "Côn Đảo",
+    "name": "Côn Đảo"
   },
   {
     "code": "VDO",
-    "city": "Qu?ng Ninh",
-    "name": "V?n ??n"
+    "city": "Quảng Ninh",
+    "name": "Vân Đồn"
   },
   {
     "code": "VII",
@@ -2390,11 +2395,6 @@ export const AIRPORTS: Airport[] = [
     "code": "AUG",
     "city": "Augusta State",
     "name": "Augusta State Airport"
-  },
-  {
-    "code": "AUH",
-    "city": "Abu Dhabi",
-    "name": "Abu Dhabi International Airport"
   },
   {
     "code": "AUI",
@@ -45628,7 +45628,7 @@ export const AIRPORTS: Airport[] = [
   }
 ].map((a) => ({
   ...a,
-  label: `${a.city} (${a.code}) ? ${a.name}`,
+  label: `${a.city} (${a.code}) - ${a.name}`,
   tags: [
     a.code,
     a.city,
