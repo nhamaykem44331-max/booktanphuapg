@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { QuotePayload, FlightResult } from '@/lib/types';
 import { fmtVND, hhmm, durationText } from '@/lib/utils';
+import { AIRPORT_NAME_MAP } from '@/lib/airports';
 import { getAirlineMeta } from '@/lib/airlines';
 
 function longDate(d?: string) {
@@ -13,6 +14,40 @@ function longDate(d?: string) {
 }
 function cabinLabel(c:string){return{economy:'Phổ thông',premium:'PT Đặc biệt',business:'Thương gia',first:'Hạng nhất'}[c]??c;}
 function airlineColor(code:string){const m:Record<string,string>={VN:'#004b8d',VJ:'#e3001b',QH:'#00873c',BL:'#0050a0',VU:'#f5a623','9G':'#ff6600',CZ:'#2563eb',MU:'#7c3aed',CA:'#dc2626',ZH:'#0ea5e9','3U':'#ef4444'};return m[code]??'#c8a96b';}
+function parseHmToMinutes(hm?:string){if(!hm||!/^\d{1,2}:\d{2}$/.test(hm))return null;const[h,m]=hm.split(':').map(Number);return h*60+m;}
+function formatMinutesShort(mins:number){const h=Math.floor(mins/60);const m=mins%60;return `${h}h${m?` ${String(m).padStart(2,'0')}m`:''}`;}
+function airportLabel(iata:string){const meta=AIRPORT_NAME_MAP[iata]||{city:iata,airportName:iata};return `${meta.city} (${iata})`;}
+
+type ParsedSegment={from:string;to:string;flightNumber:string;departHm:string;arriveHm:string;durationMinutes:number;};
+function parseJourneySegments(detailUrl?:string|null):ParsedSegment[]{
+  if(!detailUrl)return[];
+  try{
+    const url=new URL(detailUrl);
+    const raw=url.searchParams.get('segoutbound')||url.searchParams.get('seginbound')||'';
+    if(!raw)return[];
+    return raw.split('|').map(seg=>{
+      const p=seg.split('-');
+      if(p.length<16)return null;
+      const durRaw=(p[15]||'').replace(/^dur/i,'');
+      const dur=/^\d{4}$/.test(durRaw)?(Number(durRaw.slice(0,2))*60+Number(durRaw.slice(2))):0;
+      return {from:p[0],to:p[1],flightNumber:p[3],departHm:p[4],arriveHm:p[5],durationMinutes:dur};
+    }).filter(Boolean) as ParsedSegment[];
+  }catch{return[];}
+}
+function buildLayovers(detailUrl?:string|null){
+  const segments=parseJourneySegments(detailUrl);
+  if(segments.length<2)return[];
+  const out=[] as {airport:string;durationText:string}[];
+  for(let i=0;i<segments.length-1;i++){
+    const cur=segments[i], next=segments[i+1];
+    const arr=parseHmToMinutes(cur.arriveHm), dep=parseHmToMinutes(next.departHm);
+    if(arr==null||dep==null)continue;
+    let diff=dep-arr;
+    if(diff<0) diff+=24*60;
+    out.push({airport:next.from,durationText:formatMinutesShort(diff)});
+  }
+  return out;
+}
 
 function AirlineLogo({code,airline,size=28}:{code?:string;airline?:string;size?:number}){
   const meta=getAirlineMeta(code,airline);
@@ -23,6 +58,7 @@ function AirlineLogo({code,airline,size=28}:{code?:string;airline?:string;size?:
 
 // ── Compact Flight Segment ───────────────────────────────────
 function FlightSegment({label,flight,date,color}:{label:string;flight:FlightResult;date?:string;color:string}){
+  const layovers=buildLayovers(flight.detailUrl);
   return(
     <div className="overflow-hidden rounded-lg" style={{border:'1px solid #e8dcc8'}}>
       <div className="flex items-center justify-between px-2.5 py-1.5" style={{backgroundColor:color}}>
@@ -46,6 +82,25 @@ function FlightSegment({label,flight,date,color}:{label:string;flight:FlightResu
           <div className="text-[11px] text-slate-400">/người</div>
         </div>
       </div>
+      {layovers.length>0&&(
+        <div className="border-t border-[#f0ebe0] bg-[#fcfaf6] px-3 py-2">
+          <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-[#7a6a52]">Chi tiết nối chuyến</div>
+          <div className="space-y-1.5">
+            {layovers.map((stop,idx)=>(
+              <div key={`${stop.airport}-${idx}`} className="flex items-start justify-between gap-3 rounded-lg border border-[#eee2cf] bg-white px-2.5 py-2 text-[12px]">
+                <div>
+                  <div className="font-semibold text-[#1a1a1a]">Dừng tại: {airportLabel(stop.airport)}</div>
+                  <div className="text-[11px] text-slate-500">Điểm dừng {idx+1}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-[#b45309]">{stop.durationText}</div>
+                  <div className="text-[11px] text-slate-500">Nối chuyến</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -161,6 +216,7 @@ function TicketModal({data,onClose}:{data:QuotePayload;onClose:()=>void}){
               ].map(({label,flight,date:d,price})=>{
                 const col=airlineColor(flight.airlineCode);
                 const meta=getAirlineMeta(flight.airlineCode,flight.airline);
+                const layovers=buildLayovers(flight.detailUrl);
                 return(
                   <div key={label} style={{background:'white',borderRadius:'8px',border:'1px solid #e8dcc8',marginBottom:'10px',overflow:'hidden'}}>
                     <div style={{background:col,padding:'6px 12px',display:'flex',justifyContent:'space-between'}}>
@@ -184,6 +240,23 @@ function TicketModal({data,onClose}:{data:QuotePayload;onClose:()=>void}){
                         <div style={{fontSize:'11px',color:'#bbb'}}>/người</div>
                       </div>
                     </div>
+                    {layovers.length>0&&(
+                      <div style={{borderTop:'1px solid #f0ebe0',background:'#fcfaf6',padding:'10px 14px'}}>
+                        <div style={{marginBottom:'6px',fontSize:'11px',fontWeight:700,letterSpacing:'0.05em',textTransform:'uppercase',color:'#7a6a52'}}>Chi tiết nối chuyến</div>
+                        {layovers.map((stop,idx)=>(
+                          <div key={`${stop.airport}-${idx}`} style={{display:'flex',justifyContent:'space-between',gap:'12px',background:'white',border:'1px solid #eee2cf',borderRadius:'8px',padding:'8px 10px',marginBottom:idx<layovers.length-1?'6px':'0'}}>
+                            <div>
+                              <div style={{fontSize:'13px',fontWeight:700,color:'#1a1a1a'}}>Dừng tại: {airportLabel(stop.airport)}</div>
+                              <div style={{fontSize:'11px',color:'#777'}}>Điểm dừng {idx+1}</div>
+                            </div>
+                            <div style={{textAlign:'right'}}>
+                              <div style={{fontSize:'13px',fontWeight:700,color:'#b45309'}}>{stop.durationText}</div>
+                              <div style={{fontSize:'11px',color:'#777'}}>Nối chuyến</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
