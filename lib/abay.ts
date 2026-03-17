@@ -66,10 +66,15 @@ function airlineNameFromFlightNo(flightNo: string, airlineCode?: string): string
   return AIRLINE_BY_CODE[prefix] || prefix;
 }
 
+function parseYmd(date: string): { year: number; month: number; day: number } {
+  const m = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) throw new Error('Invalid date format, expected YYYY-MM-DD');
+  return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
+}
+
 function formatDateDdMmYyyy(date: string): string {
-  const dt = new Date(`${date}T00:00:00+07:00`);
-  if (Number.isNaN(dt.getTime())) throw new Error('Invalid date format, expected YYYY-MM-DD');
-  return `${String(dt.getDate()).padStart(2, '0')}-${String(dt.getMonth() + 1).padStart(2, '0')}-${dt.getFullYear()}`;
+  const { year, month, day } = parseYmd(date);
+  return `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
 }
 
 function formatDateDdSlashMmSlashYyyy(date: string): string {
@@ -77,16 +82,15 @@ function formatDateDdSlashMmSlashYyyy(date: string): string {
 }
 
 function toAbaySInfoDate(date: string): string {
-  const dt = new Date(`${date}T00:00:00+07:00`);
-  if (Number.isNaN(dt.getTime())) throw new Error('Invalid date format, expected YYYY-MM-DD');
+  const { year, month, day } = parseYmd(date);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${dt.getDate()}${months[dt.getMonth()]}${dt.getFullYear()}`;
+  return `${day}${months[month - 1]}${year}`;
 }
 
 function toIsoPlus7(date: string, hm: string, plusDays = 0): string {
-  const dt = new Date(`${date}T00:00:00+07:00`);
-  dt.setDate(dt.getDate() + plusDays);
-  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}T${hm}:00+07:00`;
+  const { year, month, day } = parseYmd(date);
+  const dt = new Date(Date.UTC(year, month - 1, day + plusDays));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}T${hm}:00+07:00`;
 }
 
 function durationMin(depHm: string, arrHm: string): number {
