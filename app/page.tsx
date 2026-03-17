@@ -79,45 +79,75 @@ type StopFilter = 'all'|'0'|'1'|'2+';
 type FilterState = { airlines:string[]; stops:StopFilter };
 
 // ── Compact Flight Row (mobile-first, abay style) ────────────
-function FlightRow({ f, selected, onSelect, onDeselect, btnColor='gold' }: {
+function FlightRow({ f, selected, onSelect, onDeselect, btnColor='gold', dense = false }: {
   f: FlightResult; selected: boolean;
   onSelect: () => void; onDeselect?: () => void;
   btnColor?: 'gold'|'blue';
+  dense?: boolean;
 }) {
   const btnBg = btnColor==='gold' ? '#c8a96b' : '#1570ef';
   const isLoading = false;
   return (
     <div className={`border-b border-[#f0ebe0] px-2.5 py-2 transition-colors ${selected?'bg-amber-50':'hover:bg-[#faf8f4]'}`}>
-      <div className="flex items-center gap-2">
+      <div className={`flex ${dense ? 'items-start gap-1.5' : 'items-center gap-2'}`}>
         {/* Logo */}
-        <AirlineLogo code={f.airlineCode} airline={f.airline} size={28} />
+        <AirlineLogo code={f.airlineCode} airline={f.airline} size={dense ? 24 : 28} />
         {/* Times + info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-1">
-            <span className="text-sm font-bold text-[#1a1a1a]">{hhmm(f.departure.time)}</span>
-            <span className="text-[10px] text-[#c8a96b]">→</span>
-            <span className="text-sm font-bold text-[#1a1a1a]">{hhmm(f.arrival.time)}</span>
-            <span className="ml-1 text-[10px] text-slate-400">{durationText(f.duration)}</span>
+        <div className="min-w-0 flex-1">
+          <div className={`flex flex-wrap items-baseline ${dense ? 'gap-x-1 gap-y-0.5' : 'gap-1'}`}>
+            <span className={`${dense ? 'text-[15px]' : 'text-sm'} font-bold text-[#1a1a1a]`}>{hhmm(f.departure.time)}</span>
+            <span className={`${dense ? 'text-[9px]' : 'text-[10px]'} text-[#c8a96b]`}>→</span>
+            <span className={`${dense ? 'text-[15px]' : 'text-sm'} font-bold text-[#1a1a1a]`}>{hhmm(f.arrival.time)}</span>
+            <span className={`${dense ? 'text-[9px]' : 'text-[10px]'} text-slate-400`}>{durationText(f.duration)}</span>
           </div>
-          <div className="text-[10px] text-slate-400 truncate">{f.flightNumber} · {f.stops===0?'Thẳng':`${f.stops} dừng`}</div>
-        </div>
-        {/* Price + button */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div className="text-right">
-            <div className="text-sm font-bold text-[#1a1a1a]">{Number(f.fareBreakdown?.totalAmount??f.price.amount).toLocaleString('vi-VN')}</div>
-            <div className="text-[9px] text-slate-400">≈${f.priceUSD}</div>
-          </div>
-          {selected ? (
-            <div className="flex items-center gap-0.5">
-              <div className="rounded-md bg-green-600 px-2 py-1 text-[10px] font-bold text-white">✓</div>
-              {onDeselect && <button onClick={onDeselect} className="flex h-6 w-6 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-500 text-[9px]">✕</button>}
+          <div className={`${dense ? 'mt-0.5 text-[9px]' : 'text-[10px]'} truncate text-slate-400`}>{f.flightNumber} · {f.stops===0?'Thẳng':`${f.stops} dừng`}</div>
+          {dense && !selected && (
+            <div className="mt-1 flex items-center justify-between gap-1.5">
+              <div className="min-w-0">
+                <div className="truncate text-[12px] font-bold leading-none text-[#1a1a1a]">{Number(f.fareBreakdown?.totalAmount??f.price.amount).toLocaleString('vi-VN')}</div>
+                <div className="text-[9px] text-slate-400">≈${f.priceUSD}</div>
+              </div>
+              <button
+                onClick={onSelect}
+                className="rounded-md px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all duration-150 hover:brightness-105 active:scale-95 active:shadow-inner"
+                style={{ backgroundColor: btnBg }}
+              >
+                Chọn
+              </button>
             </div>
-          ) : (
-            <button onClick={onSelect} className="rounded-md px-2.5 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: btnBg }}>
-              Chọn
-            </button>
           )}
         </div>
+        {/* Price + button */}
+        {!dense && (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <div className="text-right">
+              <div className="text-sm font-bold text-[#1a1a1a]">{Number(f.fareBreakdown?.totalAmount??f.price.amount).toLocaleString('vi-VN')}</div>
+              <div className="text-[9px] text-slate-400">≈${f.priceUSD}</div>
+            </div>
+            {selected ? (
+              <div className="flex items-center gap-0.5">
+                <div className="rounded-md bg-green-600 px-2 py-1 text-[10px] font-bold text-white">✓</div>
+                {onDeselect && <button onClick={onDeselect} className="flex h-6 w-6 items-center justify-center rounded-md border border-red-200 bg-red-50 text-[9px] text-red-500 transition-transform duration-150 active:scale-95">✕</button>}
+              </div>
+            ) : (
+              <button onClick={onSelect} className="rounded-md px-2.5 py-1.5 text-xs font-bold text-white shadow-sm transition-all duration-150 hover:brightness-105 active:scale-95 active:shadow-inner" style={{ backgroundColor: btnBg }}>
+                Chọn
+              </button>
+            )}
+          </div>
+        )}
+        {dense && selected && (
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <div className="text-right">
+              <div className="text-[12px] font-bold leading-none text-[#1a1a1a]">{Number(f.fareBreakdown?.totalAmount??f.price.amount).toLocaleString('vi-VN')}</div>
+              <div className="text-[9px] text-slate-400">≈${f.priceUSD}</div>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <div className="rounded-md bg-green-600 px-2 py-1 text-[10px] font-bold text-white">✓</div>
+              {onDeselect && <button onClick={onDeselect} className="flex h-6 w-6 items-center justify-center rounded-md border border-red-200 bg-red-50 text-[9px] text-red-500 transition-transform duration-150 active:scale-95">✕</button>}
+            </div>
+          </div>
+        )}
       </div>
       {/* Breakdown when selected */}
       {selected && f.fareBreakdown && (
@@ -440,9 +470,12 @@ export default function HomePage() {
             <div className="grid grid-cols-2 gap-0 bg-white" style={{border:'1px solid #e8dcc8'}}>
               {/* Outbound */}
               <div style={{borderRight:'1px solid #e8dcc8'}}>
-                <div className="px-2 py-2 text-[11px] font-bold text-white text-center" style={{backgroundColor:'#c8a96b'}}>
-                  Đi: {from}→{to}<br/><span className="font-normal text-[10px] text-white/80">{date}</span>
-                  <span className="ml-1 text-[9px] text-white/60">{sortedOutbound.length}/{outboundResults.length}</span>
+                <div className="px-1.5 py-2 text-center text-[10px] font-bold text-white" style={{backgroundColor:'#c8a96b'}}>
+                  <div className="truncate">Đi: {from}→{to}</div>
+                  <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-normal text-white/80">
+                    <span>{date}</span>
+                    <span className="text-white/60">• {sortedOutbound.length}/{outboundResults.length}</span>
+                  </div>
                 </div>
                 <FilterBar flights={outboundResults} filter={filterOutbound} onChange={setFilterOutbound}/>
                 <div className="max-h-[55vh] overflow-auto">
@@ -450,16 +483,19 @@ export default function HomePage() {
                     <FlightRow key={f.id} f={f} selected={selectedOutbound?.id===f.id}
                       onSelect={()=>selectFlight(f,'outbound')}
                       onDeselect={selectedOutbound?.id===f.id?()=>setSelectedOutbound(null):undefined}
-                      btnColor="gold"/>
+                      btnColor="gold" dense/>
                   )) : <div className="p-3 text-[10px] text-slate-400 text-center">Không có.</div>}
                 </div>
               </div>
 
               {/* Inbound */}
               <div>
-                <div className="px-2 py-2 text-[11px] font-bold text-white text-center" style={{backgroundColor:'#1570ef'}}>
-                  Về: {to}→{from}<br/><span className="font-normal text-[10px] text-white/80">{returnDate||toYmd(10)}</span>
-                  <span className="ml-1 text-[9px] text-white/60">{sortedInbound.length}/{inboundResults.length}</span>
+                <div className="px-1.5 py-2 text-center text-[10px] font-bold text-white" style={{backgroundColor:'#1570ef'}}>
+                  <div className="truncate">Về: {to}→{from}</div>
+                  <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-normal text-white/80">
+                    <span>{returnDate||toYmd(10)}</span>
+                    <span className="text-white/60">• {sortedInbound.length}/{inboundResults.length}</span>
+                  </div>
                 </div>
                 <FilterBar flights={inboundResults} filter={filterInbound} onChange={setFilterInbound}/>
                 <div className="max-h-[55vh] overflow-auto">
@@ -467,7 +503,7 @@ export default function HomePage() {
                     <FlightRow key={f.id} f={f} selected={selectedInbound?.id===f.id}
                       onSelect={()=>selectFlight(f,'inbound')}
                       onDeselect={selectedInbound?.id===f.id?()=>setSelectedInbound(null):undefined}
-                      btnColor="blue"/>
+                      btnColor="blue" dense/>
                   )) : <div className="p-3 text-[10px] text-slate-400 text-center">Không có.</div>}
                 </div>
               </div>
