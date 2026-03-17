@@ -77,7 +77,7 @@ function FlightSegment({label,flight,date,color}:{label:string;flight:FlightResu
     <div className="overflow-hidden rounded-lg" style={{border:'1px solid #e8dcc8'}}>
       <div className="flex items-center justify-between px-2.5 py-1.5" style={{backgroundColor:color}}>
         <span className="text-[10px] font-bold uppercase tracking-wide text-white/90">{label}</span>
-        <span className="text-[10px] text-white/80">{longDate(date)}</span>
+        <span className="rounded-full border border-white/25 bg-white/20 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-white shadow-sm">{longDate(date)}</span>
       </div>
       <div className="px-3 py-3 flex items-center gap-2.5">
         <AirlineLogo code={flight.airlineCode} airline={flight.airline} size={28}/>
@@ -249,9 +249,9 @@ function TicketModal({data,onClose}:{data:QuotePayload;onClose:()=>void}){
                 const layovers=buildLayovers(flight.detailUrl);
                 return(
                   <div key={label} style={{background:'white',borderRadius:'8px',border:'1px solid #e8dcc8',marginBottom:'10px',overflow:'hidden'}}>
-                    <div style={{background:col,padding:'6px 12px',display:'flex',justifyContent:'space-between'}}>
+                    <div style={{background:col,padding:'6px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                       <span style={{color:'white',fontWeight:700,fontSize:'10px',letterSpacing:'0.06em'}}>{label}</span>
-                      <span style={{color:'rgba(255,255,255,0.9)',fontSize:'10px'}}>{longDate(d)}</span>
+                      <span style={{color:'#fff',fontSize:'11px',fontWeight:900,letterSpacing:'0.04em',padding:'4px 10px',borderRadius:'999px',background:'rgba(255,255,255,0.18)',border:'1px solid rgba(255,255,255,0.24)',boxShadow:'0 2px 6px rgba(0,0,0,0.08)'}}>{longDate(d)}</span>
                     </div>
                     <div style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:'12px'}}>
                       {meta.logo&&<img src={meta.logo} alt={flight.airline} style={{width:'28px',height:'28px',borderRadius:'6px',objectFit:'contain',border:'1px solid #eee',background:'white',padding:'2px'}}/>}

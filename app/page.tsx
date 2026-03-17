@@ -439,13 +439,18 @@ export default function HomePage() {
           </div>
 
           {/* Passengers + Cabin + Search */}
-          <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5">
-            {[{l:'NL',v:adults,s:setAdults,min:1,max:9},{l:'TE',v:children,s:setChildren,min:0,max:9},{l:'EB',v:infants,s:setInfants,min:0,max:4}].map(({l,v,s,min,max})=>(
-              <div key={l}>
-                <label className="mb-0.5 block text-[10px] font-semibold text-[#7a6a52]">{l}</label>
-                <input className="w-full rounded-lg px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #e8dcc8'}} type="number" min={min} max={max} value={v} onChange={e=>s(Math.max(min,Math.min(max,Number(e.target.value||min))))}/>
+          <div className="grid grid-cols-[1fr_1.5fr_1fr_auto] gap-1.5">
+            <div>
+              <label className="mb-0.5 block text-[10px] font-semibold text-[#7a6a52]">NL</label>
+              <input className="w-full rounded-lg px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #e8dcc8'}} type="number" min={1} max={9} value={adults} onChange={e=>setAdults(Math.max(1,Math.min(9,Number(e.target.value||1))))}/>
+            </div>
+            <div>
+              <label className="mb-0.5 block text-[10px] font-semibold text-[#7a6a52]">TE + EB</label>
+              <div className="grid grid-cols-2 gap-1 rounded-lg p-1" style={{border:'1px solid #e8dcc8',backgroundColor:'#fcfaf6'}}>
+                <input className="w-full rounded-md px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #efe4d2',backgroundColor:'white'}} type="number" min={0} max={9} value={children} onChange={e=>setChildren(Math.max(0,Math.min(9,Number(e.target.value||0))))} placeholder="TE"/>
+                <input className="w-full rounded-md px-1 py-1.5 text-xs text-center focus:outline-none" style={{border:'1px solid #efe4d2',backgroundColor:'white'}} type="number" min={0} max={4} value={infants} onChange={e=>setInfants(Math.max(0,Math.min(4,Number(e.target.value||0))))} placeholder="EB"/>
               </div>
-            ))}
+            </div>
             <div>
               <label className="mb-0.5 block text-[10px] font-semibold text-[#7a6a52]">Hạng</label>
               <select className="w-full rounded-lg px-1 py-1.5 text-[10px] focus:outline-none" style={{border:'1px solid #e8dcc8'}} value={cabin} onChange={e=>setCabin(e.target.value as Cabin)}>
@@ -456,9 +461,9 @@ export default function HomePage() {
               </select>
             </div>
             <div className="flex items-end">
-              <button className="w-full rounded-lg px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
-                style={{backgroundColor:'#c8a96b'}} onClick={search} disabled={loading}>
-                {loading?'…':'Tìm'}
+              <button className="w-full rounded-xl px-4 py-2 text-sm font-extrabold text-white shadow-md transition-all duration-150 hover:brightness-105 hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
+                style={{background:'linear-gradient(135deg,#c8a96b,#b8893d)', minWidth:'96px'}} onClick={search} disabled={loading}>
+                {loading?'Đang tìm':'Tìm vé'}
               </button>
             </div>
           </div>
