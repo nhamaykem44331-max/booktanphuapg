@@ -339,7 +339,7 @@ export default function HomePage() {
       <div className="mx-auto max-w-2xl">
 
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 shadow-sm" style={{background:'linear-gradient(to right,#c8a96b,#e8d4a0)'}}>
+        <button type="button" onClick={()=>router.push('/')} className="flex w-full items-center gap-3 px-4 py-3 text-left shadow-sm" style={{background:'linear-gradient(to right,#c8a96b,#e8d4a0)'}}>
           <img src="/assets/tanphu-apg-logo.jpg" alt="Logo" className="h-8 w-8 rounded-lg object-contain"
             onError={e=>{(e.target as HTMLImageElement).style.display='none';}}/>
           <div>
@@ -352,7 +352,7 @@ export default function HomePage() {
               <div className="text-sm font-bold text-white">{meta.totalResults} chuyến</div>
             </div>
           )}
-        </div>
+        </button>
 
         {/* Search form — compact */}
         <div className="bg-white px-3 py-3 shadow-sm" style={{borderBottom:'1px solid #e8dcc8'}}>

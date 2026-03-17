@@ -29,21 +29,21 @@ function FlightSegment({label,flight,date,color}:{label:string;flight:FlightResu
         <span className="text-[10px] font-bold uppercase tracking-wide text-white/90">{label}</span>
         <span className="text-[10px] text-white/80">{longDate(date)}</span>
       </div>
-      <div className="px-2.5 py-2 flex items-center gap-2">
-        <AirlineLogo code={flight.airlineCode} airline={flight.airline} size={24}/>
+      <div className="px-3 py-3 flex items-center gap-2.5">
+        <AirlineLogo code={flight.airlineCode} airline={flight.airline} size={28}/>
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-1">
-            <span className="text-sm font-bold text-[#1a1a1a]">{hhmm(flight.departure.time)}</span>
-            <span className="text-[10px] text-[#c8a96b]">→</span>
-            <span className="text-sm font-bold text-[#1a1a1a]">{hhmm(flight.arrival.time)}</span>
-            <span className="text-[10px] text-slate-400 ml-1">{durationText(flight.duration)}</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-black text-[#1a1a1a]">{hhmm(flight.departure.time)}</span>
+            <span className="text-xs text-[#c8a96b]">→</span>
+            <span className="text-lg font-black text-[#1a1a1a]">{hhmm(flight.arrival.time)}</span>
+            <span className="ml-1 text-xs text-slate-400">{durationText(flight.duration)}</span>
           </div>
-          <div className="text-[10px] text-slate-400">{flight.airline} · {flight.flightNumber} · {flight.stops===0?'Bay thẳng':`${flight.stops} dừng`}</div>
-          <div className="text-[10px] text-slate-500">{flight.departure.airport}→{flight.arrival.airport}</div>
+          <div className="text-[13px] text-slate-500">{flight.airline} · {flight.flightNumber} · {flight.stops===0?'Bay thẳng':`${flight.stops} dừng`}</div>
+          <div className="text-[13px] text-slate-600">{flight.departure.airport}→{flight.arrival.airport}</div>
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-xs font-bold text-[#1a1a1a]">{fmtVND(flight.fareBreakdown?.totalAmount??flight.price.amount)}</div>
-          <div className="text-[9px] text-slate-400">/người</div>
+        <div className="shrink-0 text-right">
+          <div className="text-base font-black text-[#1a1a1a]">{fmtVND(flight.fareBreakdown?.totalAmount??flight.price.amount)}</div>
+          <div className="text-[11px] text-slate-400">/người</div>
         </div>
       </div>
     </div>
@@ -167,21 +167,21 @@ function TicketModal({data,onClose}:{data:QuotePayload;onClose:()=>void}){
                       <span style={{color:'white',fontWeight:700,fontSize:'10px',letterSpacing:'0.06em'}}>{label}</span>
                       <span style={{color:'rgba(255,255,255,0.9)',fontSize:'10px'}}>{longDate(d)}</span>
                     </div>
-                    <div style={{padding:'10px 12px',display:'flex',alignItems:'center',gap:'10px'}}>
-                      {meta.logo&&<img src={meta.logo} alt={flight.airline} style={{width:'24px',height:'24px',borderRadius:'6px',objectFit:'contain',border:'1px solid #eee',background:'white',padding:'2px'}}/>}
+                    <div style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:'12px'}}>
+                      {meta.logo&&<img src={meta.logo} alt={flight.airline} style={{width:'28px',height:'28px',borderRadius:'6px',objectFit:'contain',border:'1px solid #eee',background:'white',padding:'2px'}}/>}
                       <div style={{flex:1}}>
                         <div style={{display:'flex',alignItems:'baseline',gap:'6px'}}>
-                          <span style={{fontSize:'18px',fontWeight:900,color:'#1a1a1a'}}>{hhmm(flight.departure.time)}</span>
-                          <span style={{color:'#c8a96b',fontSize:'12px'}}>→</span>
-                          <span style={{fontSize:'18px',fontWeight:900,color:'#1a1a1a'}}>{hhmm(flight.arrival.time)}</span>
-                          <span style={{fontSize:'10px',color:'#aaa'}}>{durationText(flight.duration)}</span>
+                          <span style={{fontSize:'22px',fontWeight:900,color:'#1a1a1a'}}>{hhmm(flight.departure.time)}</span>
+                          <span style={{color:'#c8a96b',fontSize:'13px'}}>→</span>
+                          <span style={{fontSize:'22px',fontWeight:900,color:'#1a1a1a'}}>{hhmm(flight.arrival.time)}</span>
+                          <span style={{fontSize:'12px',color:'#aaa'}}>{durationText(flight.duration)}</span>
                         </div>
-                        <div style={{fontSize:'10px',color:'#888'}}>{flight.airline} · {flight.flightNumber} · {flight.stops===0?'Bay thẳng':`${flight.stops} dừng`}</div>
-                        <div style={{fontSize:'10px',color:'#aaa'}}>{flight.departure.airport} → {flight.arrival.airport}</div>
+                        <div style={{fontSize:'13px',color:'#777'}}>{flight.airline} · {flight.flightNumber} · {flight.stops===0?'Bay thẳng':`${flight.stops} dừng`}</div>
+                        <div style={{fontSize:'13px',color:'#888'}}>{flight.departure.airport} → {flight.arrival.airport}</div>
                       </div>
                       <div style={{textAlign:'right'}}>
-                        <div style={{fontSize:'13px',fontWeight:800,color:'#1a1a1a'}}>{Number(price).toLocaleString('vi-VN')}đ</div>
-                        <div style={{fontSize:'9px',color:'#bbb'}}>/người</div>
+                        <div style={{fontSize:'18px',fontWeight:900,color:'#1a1a1a'}}>{Number(price).toLocaleString('vi-VN')}đ</div>
+                        <div style={{fontSize:'11px',color:'#bbb'}}>/người</div>
                       </div>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export default function QuotePage(){
         {/* Header — compact */}
         <div style={{background:'linear-gradient(135deg,#c8a96b,#e8d4a0)'}}>
           <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2.5">
+            <button type="button" onClick={()=>router.push('/')} className="flex items-center gap-2.5 text-left">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/25">
                 <img src="/assets/tanphu-apg-logo.jpg" alt="Logo" className="h-8 w-8 rounded-lg object-contain"
                   onError={e=>{(e.target as HTMLImageElement).style.display='none';}}/>
@@ -286,7 +286,7 @@ export default function QuotePage(){
                 <div className="text-sm font-black tracking-wide text-white">TAN PHU APG</div>
                 <div className="text-[10px] text-white/80">APG Flight Agent</div>
               </div>
-            </div>
+            </button>
             <div className="text-right">
               <div className="text-[9px] text-white/70">Mã báo giá</div>
               <div className="font-mono text-xs font-black text-white">{quoteId}</div>
