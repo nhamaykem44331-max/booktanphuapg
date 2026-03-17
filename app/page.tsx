@@ -89,27 +89,31 @@ function FlightRow({ f, selected, onSelect, onDeselect, btnColor='gold', dense =
   const isLoading = false;
   return (
     <div className={`border-b border-[#f0ebe0] px-2.5 py-2 transition-colors ${selected?'bg-amber-50':'hover:bg-[#faf8f4]'}`}>
-      <div className={`flex ${dense ? 'items-start gap-1.5' : 'items-center gap-2'}`}>
+      <div className={`flex ${dense ? 'items-start gap-1' : 'items-center gap-2'}`}>
         {/* Logo */}
         <AirlineLogo code={f.airlineCode} airline={f.airline} size={dense ? 24 : 28} />
         {/* Times + info */}
         <div className="min-w-0 flex-1">
-          <div className={`flex flex-wrap items-baseline ${dense ? 'gap-x-1 gap-y-0.5' : 'gap-1'}`}>
-            <span className={`${dense ? 'text-[15px]' : 'text-sm'} font-bold text-[#1a1a1a]`}>{hhmm(f.departure.time)}</span>
-            <span className={`${dense ? 'text-[9px]' : 'text-[10px]'} text-[#c8a96b]`}>→</span>
-            <span className={`${dense ? 'text-[15px]' : 'text-sm'} font-bold text-[#1a1a1a]`}>{hhmm(f.arrival.time)}</span>
-            <span className={`${dense ? 'text-[9px]' : 'text-[10px]'} text-slate-400`}>{durationText(f.duration)}</span>
-          </div>
-          <div className={`${dense ? 'mt-0.5 text-[9px]' : 'text-[10px]'} truncate text-slate-400`}>{f.flightNumber} · {f.stops===0?'Thẳng':`${f.stops} dừng`}</div>
+          {dense ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold leading-none text-[#1a1a1a]">{hhmm(f.departure.time)}</span>
+              <span className="truncate text-[8px] text-slate-400">{f.flightNumber}</span>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-baseline gap-1">
+              <span className="text-sm font-bold text-[#1a1a1a]">{hhmm(f.departure.time)}</span>
+              <span className="text-[10px] text-[#c8a96b]">→</span>
+              <span className="text-sm font-bold text-[#1a1a1a]">{hhmm(f.arrival.time)}</span>
+              <span className="text-[10px] text-slate-400">{durationText(f.duration)}</span>
+            </div>
+          )}
+          <div className={`${dense ? 'mt-0.5 text-[8px]' : 'text-[10px]'} truncate text-slate-400`}>{f.stops===0?'Bay thẳng':`${f.stops} điểm dừng`}</div>
           {dense && !selected && (
-            <div className="mt-1 flex items-center justify-between gap-1.5">
-              <div className="min-w-0">
-                <div className="truncate text-[12px] font-bold leading-none text-[#1a1a1a]">{Number(f.fareBreakdown?.totalAmount??f.price.amount).toLocaleString('vi-VN')}</div>
-                <div className="text-[9px] text-slate-400">≈${f.priceUSD}</div>
-              </div>
+            <div className="mt-0.5 flex items-center justify-between gap-1">
+              <div className="min-w-0 truncate text-[11px] font-semibold leading-none text-[#b45309]">{Math.round(Number(f.fareBreakdown?.totalAmount??f.price.amount)/1000)}K</div>
               <button
                 onClick={onSelect}
-                className="rounded-md px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all duration-150 hover:brightness-105 active:scale-95 active:shadow-inner"
+                className="min-w-[46px] rounded-md px-2 py-1 text-[10px] font-bold text-white shadow-sm transition-all duration-150 hover:brightness-105 active:scale-95 active:shadow-inner"
                 style={{ backgroundColor: btnBg }}
               >
                 Chọn
@@ -138,13 +142,10 @@ function FlightRow({ f, selected, onSelect, onDeselect, btnColor='gold', dense =
         )}
         {dense && selected && (
           <div className="flex shrink-0 flex-col items-end gap-1">
-            <div className="text-right">
-              <div className="text-[12px] font-bold leading-none text-[#1a1a1a]">{Number(f.fareBreakdown?.totalAmount??f.price.amount).toLocaleString('vi-VN')}</div>
-              <div className="text-[9px] text-slate-400">≈${f.priceUSD}</div>
-            </div>
+            <div className="text-right text-[11px] font-semibold leading-none text-[#b45309]">{Math.round(Number(f.fareBreakdown?.totalAmount??f.price.amount)/1000)}K</div>
             <div className="flex items-center gap-0.5">
-              <div className="rounded-md bg-green-600 px-2 py-1 text-[10px] font-bold text-white">✓</div>
-              {onDeselect && <button onClick={onDeselect} className="flex h-6 w-6 items-center justify-center rounded-md border border-red-200 bg-red-50 text-[9px] text-red-500 transition-transform duration-150 active:scale-95">✕</button>}
+              <div className="rounded-md bg-green-600 px-2 py-1 text-[9px] font-bold text-white">✓</div>
+              {onDeselect && <button onClick={onDeselect} className="flex h-5 w-5 items-center justify-center rounded-md border border-red-200 bg-red-50 text-[8px] text-red-500 transition-transform duration-150 active:scale-95">✕</button>}
             </div>
           </div>
         )}
